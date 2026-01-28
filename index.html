@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>雲南自助之旅 2026</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- SortableJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'earth-dark': '#2d1b0e', 
+                        'earth-primary': '#6d4c41', 
+                        'earth-accent': '#8d6e63', 
+                        'earth-light': '#d7ccc8', 
+                        'clay-red': '#b71c1c',    
+                        'warm-bg': '#fffbf0',     
+                        'gold-accent': '#f9a825', 
+                    },
+                    fontFamily: {
+                        serif: ['"Noto Serif TC"', 'serif'],
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Noto Serif TC', serif; 
+            background-color: #fffbf0; 
+            color: #1a1a1a; 
+            padding-bottom: 120px; 
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b08968' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            font-size: 18px; 
+            line-height: 1.6;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        h1, h2, h3, h4 { font-weight: 700 !important; }
+        
+        .tab-content { display: none; animation: fadeIn 0.3s ease-out; }
+        .tab-content.active { display: block; }
+        
+        .nav-item.active { color: #5d4037; position: relative; font-weight: bold; transform: scale(1.1); transition: transform 0.2s; }
+        .nav-item.active::after {
+            content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            width: 8px; height: 8px; background-color: #c62828; border-radius: 50%;
+        }
+
+        .card-earth { 
+            background: #ffffff; 
+            border: 1px solid #d7ccc8; 
+            border-radius: 16px; 
+            box-shadow: 4px 4px 0px rgba(121, 85, 72, 0.1); 
+            margin-bottom: 24px; position: relative;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .day-tab.active {
+            background-color: #5d4037; color: #ffffff; border-color: #5d4037;
+            box-shadow: 0 6px 8px -1px rgba(62, 39, 35, 0.4);
+            transform: scale(1.1);
+        }
+
+        .timeline-line { position: absolute; left: 24px; top: 0; bottom: 0; width: 2px; background-color: #d7ccc8; z-index: 0; }
+        .timeline-dot {
+            position: absolute; left: -9px; top: 6px; width: 14px; height: 14px; 
+            border-radius: 50%; background-color: #c62828; border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px #c62828;
+        }
+        
+        .weather-loading { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        .modal-enter { animation: modalFadeIn 0.2s ease-out forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .handle { cursor: grab; touch-action: none; }
+        .sortable-ghost { opacity: 0.4; background-color: #f5f5f5; border: 2px dashed #999; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="bg-earth-dark text-earth-light p-5 sticky top-0 z-50 shadow-md border-b-4 border-earth-primary">
+        <div class="flex justify-between items-center max-w-lg mx-auto">
+            <div>
+                <h1 class="text-3xl font-bold text-[#ffffff] mb-1">雲南自遊</h1>
+                <div class="flex items-center text-sm text-earth-light mt-1 space-x-2 opacity-90">
+                    <span class="border border-earth-light px-2 py-0.5 rounded">2026 貳月</span>
+                    <span class="tracking-wider">深度文化行</span>
+                </div>
+            </div>
+            <div class="text-center bg-white/10 p-2 rounded border border-white/20 backdrop-blur-sm">
+                 <div class="text-[10px] uppercase tracking-widest opacity-80 font-sans text-white">總天數</div>
+                <div class="text-2xl font-bold leading-none text-[#ffffff] mt-0.5" id="total-days-display">12</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-lg mx-auto relative px-3 pt-4">
+
+        <!-- 1. 行程 Tab -->
+        <div id="tab-itinerary" class="tab-content active">
+            <div class="sticky top-[100px] z-40 bg-[#fffbf0]/98 backdrop-blur-sm border-b border-earth-light shadow-sm py-4 px-2 overflow-x-auto whitespace-nowrap no-scrollbar" id="day-tabs-container"></div>
+            <div class="py-4 min-h-[60vh]" id="day-content-container"></div>
+            <div class="flex justify-between px-2 text-earth-primary text-base font-bold opacity-90 pb-8">
+                <button onclick="changeDay(-1)" id="prev-day-btn" class="disabled:opacity-20 py-3 px-6 bg-white border border-earth-light rounded-lg shadow-sm"><i class="fas fa-chevron-left mr-2"></i> 前一天</button>
+                <button onclick="changeDay(1)" id="next-day-btn" class="disabled:opacity-20 py-3 px-6 bg-white border border-earth-light rounded-lg shadow-sm">後一天 <i class="fas fa-chevron-right ml-2"></i></button>
+            </div>
+        </div>
+
+        <!-- 2. 記帳 Tab -->
+        <div id="tab-budget" class="tab-content p-2">
+            <!-- 匯率換算器 (左右互換) -->
+            <div class="card-earth p-4 bg-earth-dark/5 border-dashed border border-earth-accent mb-4">
+                <h3 class="text-base font-bold text-earth-dark text-center mb-2"><i class="fas fa-calculator mr-2"></i>匯率換算</h3>
+                <div class="flex items-center gap-2">
+                    <div class="flex-1">
+                        <label class="block text-xs text-center text-gray-500 mb-1">人民幣 (CNY)</label>
+                        <input type="number" id="calc-cny" class="w-full p-2 text-center rounded border border-earth-light focus:border-earth-primary text-lg font-bold" placeholder="¥" oninput="calculateRate('cny')">
+                    </div>
+                    <i class="fas fa-exchange-alt text-earth-accent text-xl mt-4"></i>
+                    <div class="flex-1">
+                        <label class="block text-xs text-center text-gray-500 mb-1">新台幣 (TWD)</label>
+                        <input type="number" id="calc-twd" class="w-full p-2 text-center rounded border border-earth-light focus:border-earth-primary text-lg font-bold" placeholder="$" oninput="calculateRate('twd')">
+                    </div>
+                </div>
+                <div class="flex justify-center items-center mt-2 text-xs text-gray-500 gap-2">
+                    <span>匯率: 1 人民幣 = </span><input type="number" id="current-rate" value="4.5" class="w-12 p-1 text-center border rounded bg-white" onchange="updateRate()"><span>台幣</span>
+                </div>
+            </div>
+
+            <!-- 成員設定按鈕 -->
+            <div class="flex justify-end mb-2">
+                <button onclick="document.getElementById('member-modal').classList.remove('hidden')" class="text-sm text-earth-primary underline font-bold"><i class="fas fa-users-cog mr-1"></i>成員管理</button>
+            </div>
+
+            <!-- 結算看板 -->
+            <div class="card-earth p-5 bg-earth-dark text-earth-light border-none shadow-lg mb-6">
+                <h3 class="text-base opacity-80 font-sans mb-3 text-center">當前分帳結算 (折合人民幣)</h3>
+                <div id="balance-board" class="space-y-2 text-center text-lg"><p class="text-sm italic opacity-60">暫無帳目資料</p></div>
+                <div class="mt-4 pt-3 border-t border-white/20 text-center text-xs opacity-60">
+                    *分帳計算統一折算為人民幣，方便結算
+                </div>
+            </div>
+
+            <!-- 記帳表單 -->
+            <div class="card-earth p-6 sticky top-[110px] z-40 shadow-lg bg-white border-l-4 border-earth-primary">
+                
+                <!-- 總支出顯示 -->
+                <div class="mb-6 border-b border-dashed border-earth-light pb-4">
+                    <div class="flex justify-between items-end mb-2">
+                        <p class="text-sm text-gray-500 font-sans tracking-wider font-bold">總支出統計</p>
+                        <button onclick="clearAllData('expenses')" class="text-xs text-gray-400 underline">重置</button>
+                    </div>
+                    <div class="flex flex-col items-end space-y-1">
+                        <div class="text-xl font-bold text-earth-dark">人民幣總支: ¥ <span id="sum-cny" class="text-2xl">0</span></div>
+                        <div class="text-xl font-bold text-blue-800">台幣總支: NT$ <span id="sum-twd" class="text-2xl">0</span></div>
+                        <div class="text-sm text-gray-400 mt-1">折合總計約: NT$ <span id="total-est-twd">0</span></div>
+                    </div>
+                </div>
+
+                <h3 class="font-bold text-xl text-earth-dark mb-4">新增支出</h3>
+                <form id="expense-form" class="space-y-4 font-sans">
+                    <input type="text" id="item-name" placeholder="項目名稱 (如: 晚餐)" class="w-full p-3 bg-gray-50 border border-earth-light rounded focus:border-earth-primary outline-none text-lg" required>
+                    <div class="flex gap-3">
+                        <select id="item-currency" class="w-1/3 p-3 bg-gray-50 border border-earth-light rounded outline-none font-bold text-earth-dark text-lg"><option value="CNY">¥ CNY</option><option value="TWD">$ TWD</option></select>
+                        <input type="number" id="item-price" placeholder="金額" class="w-2/3 p-3 bg-gray-50 border border-earth-light rounded focus:border-earth-primary outline-none text-lg" required>
+                    </div>
+                    <div class="bg-warm-bg p-3 rounded border border-earth-light/50">
+                        <div class="flex items-center justify-between mb-3"><label class="text-sm font-bold text-earth-primary">誰先付錢？</label><select id="item-payer" class="text-base p-1 border rounded bg-white w-32 font-bold text-center"></select></div>
+                        <div class="mb-1"><label class="text-sm font-bold text-earth-primary block mb-2">分攤人 (預設全選)：</label><div id="item-involved" class="grid grid-cols-2 gap-2"></div></div>
+                    </div>
+                    <!-- 按鈕類型設為 submit，並綁定ID -->
+                    <button type="submit" id="add-expense-btn" class="w-full py-4 bg-earth-primary text-white rounded shadow hover:bg-earth-dark transition-colors font-bold tracking-widest mt-2 text-lg">記上一筆</button>
+                </form>
+            </div>
+            <div id="expense-list" class="space-y-4 pb-20"></div>
+        </div>
+
+        <!-- 3. 導覽 Tab -->
+        <div id="tab-guide" class="tab-content p-2">
+            <div class="flex gap-3 mb-6 overflow-x-auto no-scrollbar pb-2">
+                <button onclick="scrollToId('guide-safety')" class="px-4 py-2 bg-red-100 text-red-800 rounded-full text-base font-bold whitespace-nowrap">⚠️ 安全</button>
+                <button onclick="scrollToId('guide-food')" class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full text-base font-bold whitespace-nowrap">🍴 美食</button>
+                <button onclick="scrollToId('guide-gift')" class="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-base font-bold whitespace-nowrap">🎁 伴手禮</button>
+                <button onclick="scrollToId('guide-spot')" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-base font-bold whitespace-nowrap">🏔️ 景點</button>
+            </div>
+            <div id="guide-safety" class="bg-red-50 border-l-4 border-red-500 p-5 mb-8 rounded-lg shadow-sm">
+                <h3 class="font-bold text-xl mb-3 text-clay-red flex items-center"><i class="fas fa-heartbeat mr-2"></i>高原安全</h3>
+                <ul class="list-disc pl-6 text-base text-red-900 space-y-2 font-bold"><li>麗江第一天<strong>絕對不洗頭</strong> (防風寒)。</li><li><strong>動作放慢</strong>，不可劇烈運動。</li><li>備好氧氣瓶，頭痛時吸氧。</li></ul>
+            </div>
+            <div id="guide-food" class="mb-10"><h3 class="font-bold text-2xl mb-5 text-earth-dark border-b border-earth-light pb-2 text-center">美食地圖</h3><div id="food-guide-list" class="space-y-8"></div></div>
+            <div id="guide-gift" class="mb-10"><h3 class="font-bold text-2xl mb-5 text-earth-dark border-b border-earth-light pb-2 text-center">伴手禮</h3><div id="souvenir-guide-list" class="space-y-6"></div></div>
+            <div id="guide-spot" class="mb-10"><h3 class="font-bold text-2xl mb-5 text-earth-dark border-b border-earth-light pb-2 text-center">景點深度導覽</h3><div id="spot-guide-list" class="space-y-8"></div></div>
+        </div>
+
+        <!-- 4. 資訊 Tab -->
+        <div id="tab-info" class="tab-content p-2">
+            <div class="card-earth p-5 border-l-8 border-l-earth-primary mb-6">
+                <div class="flex justify-between items-center mb-4 border-b border-earth-light pb-2"><h3 class="font-bold text-xl text-earth-dark"><i class="fas fa-plane mr-2"></i>航班資訊</h3><button onclick="clearAllData('flights')" class="text-sm text-gray-400">清除</button></div>
+                <form id="flight-form" class="space-y-4 mb-4"><input type="text" id="flight-info-str" placeholder="例: 2/1 19:50 昆明 CI553" class="w-full p-3 border border-earth-light rounded font-medium text-lg" required><button type="submit" class="w-full bg-earth-accent text-white py-3 rounded text-base font-bold">新增航班</button></form>
+                <div id="flight-list" class="space-y-3 text-base"></div>
+            </div>
+
+            <div class="card-earth p-5 bg-white mb-6">
+                <h3 class="font-bold text-xl text-earth-dark mb-5 border-b pb-3"><i class="fas fa-lightbulb mr-2 text-gold-accent"></i>實用資訊</h3>
+                <div class="space-y-5">
+                    <div class="bg-warm-bg p-4 rounded border border-earth-light/50"><h4 class="font-bold text-earth-primary mb-2 text-lg"><i class="fas fa-tshirt mr-2"></i>穿著建議 (洋蔥式)</h4><p class="text-base text-gray-800 font-medium">早晚溫差極大(可達15度)。<br><strong>內層：</strong>排汗衣/發熱衣。<br><strong>中層：</strong>刷毛衣/羽絨背心 (保暖)。<br><strong>外層：</strong>防風防水外套 (衝鋒衣)。<br><strong>配件：</strong>毛帽(必備，防頭痛)、墨鏡、防曬乳。</p></div>
+                    <div class="bg-warm-bg p-4 rounded border border-earth-light/50"><h4 class="font-bold text-earth-primary mb-2 text-lg"><i class="fas fa-wifi mr-2"></i>網卡與網路</h4><p class="text-base text-gray-800 font-medium"><strong>漫遊/中港澳網卡：</strong>推薦使用，<strong>免翻牆</strong>可直接用 Line/FB/IG。<br><strong>支付：</strong>支付寶/微信支付綁定台灣信用卡，大多店家都可刷。</p></div>
+                    <div class="bg-warm-bg p-4 rounded border border-earth-light/50"><h4 class="font-bold text-earth-primary mb-2 text-lg"><i class="fas fa-plug mr-2"></i>電壓與插座</h4><p class="text-base text-gray-800 font-medium"><strong>電壓：</strong>220V (台灣是110V)。<br><strong>插座：</strong>兩孔插座(扁頭)與台灣通用。三孔是八字型。</p></div>
+                    <div class="bg-warm-bg p-4 rounded border border-earth-light/50"><h4 class="font-bold text-earth-primary mb-2 text-lg"><i class="fas fa-taxi mr-2"></i>交通出行</h4><p class="text-base text-gray-800 font-medium"><strong>叫車：</strong>下載「滴滴出行」。<br><strong>地圖：</strong>當地用「高德地圖」或「百度地圖」最準。<br><strong>高鐵：</strong>需持台胞證走「人工通道」。</p></div>
+                </div>
+            </div>
+
+            <div class="card-earth p-5 border-l-8 border-l-clay-red mb-6">
+                <h3 class="font-bold text-xl mb-4 text-clay-red"><i class="fas fa-phone-alt mr-2"></i>緊急聯絡</h3>
+                <div class="bg-red-50 p-4 rounded text-base mb-4"><span class="font-bold text-red-900 block mb-1">海基會緊急專線：</span><a href="tel:+886225339995" class="text-red-600 font-mono text-xl font-bold">+886-2-2533-9995</a></div>
+                <div class="flex justify-around text-center"><a href="tel:110" class="block bg-white p-3 rounded w-24 border border-earth-light font-black text-3xl text-earth-dark">110</a><a href="tel:120" class="block bg-white p-3 rounded w-24 border border-earth-light font-black text-3xl text-earth-dark">120</a></div>
+            </div>
+
+            <div class="card-earth p-5 bg-yellow-50/40 border-yellow-200/50">
+                <h3 class="font-bold text-lg text-earth-dark mb-4"><i class="fas fa-share-nodes mr-2"></i>備份與分享</h3>
+                <div class="flex gap-4">
+                    <button onclick="exportData()" class="flex-1 bg-earth-primary text-white py-3 rounded shadow hover:bg-earth-dark text-base font-bold text-center">匯出檔案</button>
+                    <label class="flex-1 bg-white text-earth-primary border border-earth-primary py-3 rounded shadow-sm text-base font-bold text-center cursor-pointer">匯入檔案<input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(this)"></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 檢查表 Tab -->
+        <div id="tab-check" class="tab-content p-2">
+            <div class="bg-earth-primary text-white p-5 rounded-lg shadow-md mb-6 flex justify-between items-center">
+                <div><h2 class="text-xl font-bold tracking-wider">行囊清單</h2></div>
+                <div class="text-right"><div class="text-3xl font-bold font-serif text-yellow-300" id="check-progress">0%</div></div>
+            </div>
+            <div class="card-earth p-5 mb-6 bg-white">
+                <form id="checklist-form" class="flex gap-2 mb-4"><input type="text" id="new-check-item" placeholder="新增物品..." class="flex-1 p-3 border border-earth-light rounded outline-none" required><button type="submit" class="bg-earth-primary text-white px-6 rounded font-bold"><i class="fas fa-plus"></i></button></form>
+                <div id="checklist-container" class="space-y-4"></div>
+                <div class="text-center mt-4"><button onclick="resetChecklist()" class="text-sm text-gray-400 underline">重置</button></div>
+            </div>
+            <div class="card-earth p-5 bg-yellow-50/20 border-yellow-200">
+                <h2 class="text-xl font-bold mb-4 text-earth-dark"><i class="fas fa-sticky-note mr-2 text-gold-accent"></i>備忘錄</h2>
+                <form id="memo-form" class="flex gap-2 mb-4"><input type="text" id="new-memo-item" placeholder="新增備忘..." class="flex-1 p-3 border border-earth-light rounded outline-none" required><button type="submit" class="bg-gold-accent text-white px-6 rounded font-bold"><i class="fas fa-plus"></i></button></form>
+                <div id="memo-container" class="space-y-3"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 w-full bg-[#fffbf0] border-t border-earth-primary flex justify-around py-4 z-50 text-gray-600 text-sm font-bold shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
+        <button class="nav-item active flex flex-col items-center w-1/5" onclick="switchTab('itinerary', this)"><i class="fas fa-scroll text-2xl mb-1"></i><span>行程</span></button>
+        <button class="nav-item flex flex-col items-center w-1/5" onclick="switchTab('budget', this)"><i class="fas fa-coins text-2xl mb-1"></i><span>記帳</span></button>
+        <button class="nav-item flex flex-col items-center w-1/5" onclick="switchTab('guide', this)"><i class="fas fa-book-reader text-2xl mb-1"></i><span>導覽</span></button>
+        <button class="nav-item flex flex-col items-center w-1/5" onclick="switchTab('info', this)"><i class="fas fa-info-circle text-2xl mb-1"></i><span>資訊</span></button>
+        <button class="nav-item flex flex-col items-center w-1/5" onclick="switchTab('check', this)"><i class="fas fa-archive text-2xl mb-1"></i><span>清單</span></button>
+    </nav>
+
+    <!-- Member Settings Modal -->
+    <div id="member-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-sm rounded-lg shadow-xl p-6 modal-enter border border-earth-light">
+            <h3 class="text-2xl font-bold text-earth-dark mb-4">設定旅伴成員</h3>
+            <p class="text-sm text-gray-500 mb-3">輸入名字用逗號隔開</p>
+            <input type="text" id="member-input" class="w-full border p-3 rounded mb-5 focus:border-earth-primary outline-none text-lg">
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('member-modal').classList.add('hidden')" class="px-5 py-2 text-gray-500 font-bold">取消</button>
+                <button onclick="saveMembers()" class="px-5 py-2 bg-earth-primary text-white rounded font-bold">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Read Modal (Detailed Info) -->
+    <div id="info-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="bg-[#fffefb] w-full max-w-xl rounded-2xl shadow-2xl border border-earth-light relative modal-enter max-h-[85vh] overflow-y-auto">
+            <div class="sticky top-0 bg-[#fffefb] p-6 border-b border-earth-light flex justify-between items-center z-10">
+                <h3 id="modal-title" class="text-3xl font-bold text-earth-dark">景點</h3>
+                <button onclick="closeModal('info-modal')" class="text-gray-500 text-4xl"><i class="fas fa-times-circle"></i></button>
+            </div>
+            <div class="p-8">
+                <div class="mb-5"><span id="modal-tag" class="inline-block bg-earth-accent text-white text-base px-4 py-1 rounded tracking-wider"></span></div>
+                <div id="modal-content" class="prose prose-xl prose-stone font-sans leading-relaxed text-justify text-black font-medium"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal (Activity) -->
+    <div id="edit-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl p-6 modal-enter">
+            <h3 class="text-2xl font-bold mb-5">編輯活動</h3>
+            <form id="edit-activity-form" class="space-y-5">
+                <input type="hidden" id="edit-day-idx"><input type="hidden" id="edit-act-idx">
+                <input type="text" id="edit-name" class="w-full border p-3 rounded text-lg" placeholder="名稱">
+                <select id="edit-type" class="w-full border p-3 rounded text-lg"><option value="spot">景點</option><option value="transport">交通</option><option value="food">美食</option><option value="hotel">住宿</option></select>
+                <input type="text" id="edit-desc" class="w-full border p-3 rounded text-lg" placeholder="簡述">
+                <textarea id="edit-detail" rows="5" class="w-full border p-3 rounded text-lg" placeholder="詳細"></textarea>
+                <div class="flex justify-between pt-3">
+                    <button type="button" onclick="deleteActivity()" class="text-red-500 font-bold text-lg">刪除</button>
+                    <div class="flex gap-4">
+                        <button type="button" onclick="closeModal('edit-modal')" class="text-gray-500 text-lg font-bold">取消</button>
+                        <button type="submit" class="bg-earth-primary text-white px-6 py-3 rounded font-bold text-lg">儲存</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Hotel Modal -->
+    <div id="edit-hotel-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-sm rounded-xl shadow-2xl p-6 modal-enter">
+            <h3 class="text-xl font-bold mb-4 text-earth-dark">編輯住宿</h3>
+            <input type="hidden" id="edit-hotel-day-idx">
+            <label class="block text-sm font-bold text-gray-600 mb-2">飯店名稱</label>
+            <input type="text" id="edit-hotel-name" class="w-full border p-3 rounded text-lg mb-5 focus:border-earth-primary outline-none">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeModal('edit-hotel-modal')" class="px-4 py-2 text-gray-500 font-bold">取消</button>
+                <button onclick="saveHotel()" class="px-4 py-2 bg-earth-primary text-white rounded font-bold">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const STORAGE_KEY = 'yunnan_trip_v16_final_fix';
+        let currentRate = 4.5; 
+
+        const cityCoords = { "昆明": { lat: 24.8801, long: 102.8329 }, "大理": { lat: 25.6065, long: 100.2676 }, "沙溪": { lat: 26.3167, long: 99.8500 }, "麗江": { lat: 26.8721, long: 100.2297 }, "瀘沽湖": { lat: 27.6967, long: 100.7333 }, "香格里拉": { lat: 27.8251, long: 99.7073 } };
+        const defaultMembers = ["美惠", "志義", "年豐", "美英"];
+        
+        // Detailed Spot Info (Same as V15.1)
+        const detailedSpots = {
+            "昆明石林": "<h4>🪨 地質奇觀</h4><p>世界自然遺產，形成於2.7億年前。阿詩瑪傳說的發源地。</p>",
+            "滇池": "<h4>🌊 高原明珠</h4><p>雲南最大淡水湖，冬季可觀賞來自西伯利亞的紅嘴鷗。</p>",
+            "大理古城": "<h4>🏰 南詔古都</h4><p>始建於明洪武十五年，背靠蒼山面朝洱海。建築風格為「三坊一照壁」。</p>",
+            "五華樓": "<h4>📜 天下第一樓</h4><p>南詔國賓館，可俯瞰古城全景。</p>",
+            "洱海環湖": "<h4>💧 洱海月</h4><p>「蒼山不墨千秋畫，洱海無弦萬古琴」。</p>",
+            "雙廊古鎮": "<h4>✨ 蒼洱風光第一鎮</h4><p>位於洱海東北岸，是欣賞落日的絕佳點。</p>",
+            "喜城古鎮": "<h4>🏠 白族建築博物館</h4><p>嚴家大院是建築精髓。喜洲粑粑必吃。</p>",
+            "蟠溪S灣": "<h4>🛣️ 網紅打卡</h4><p>生態廊道上最美的S型彎道。</p>",
+            "沙溪古鎮": "<h4>🐴 茶馬古道</h4><p>唯一倖存的古集市，寺登街和古戲台是核心。</p>",
+            "玉津橋": "<h4>🌉 歷史印記</h4><p>橫跨黑惠江的百年石拱橋。</p>",
+            "拉市海": "<h4>🌿 茶馬古道</h4><p>騎馬走古道的熱門地點。</p>",
+            "束河古鎮": "<h4>🏠 納西之源</h4><p>皮匠之鄉，比大研古鎮更寧靜。</p>",
+            "玉龍雪山": "<h4>🏔️ 納西神山</h4><p>主峰扇子陡海拔5596米，至今無人登頂。</p>",
+            "藍月谷": "<h4>💎 藍色眼淚</h4><p>白水河，水呈蒂芙尼藍。</p>",
+            "印象麗江": "<h4>🎭 靈魂震撼</h4><p>張藝謀執導，海拔3100米的實景演出。</p>",
+            "麗江古城": "<h4>🏯 世界遺產</h4><p>沒有城牆的古城，家家流水，戶戶垂楊。</p>",
+            "瀘沽湖": "<h4>👩 東方女兒國</h4><p>摩梭人走婚文化，高原明珠。</p>",
+            "走婚橋": "<h4>❤️ 天下第一鵲橋</h4><p>草海上的長橋，摩梭男女約會地。</p>",
+            "虎跳峽": "<h4>🌊 驚濤駭浪</h4><p>世界上落差最大的峽谷之一。</p>",
+            "獨克宗古城": "<h4>🌕 月光之城</h4><p>擁有世界最大的轉經筒。</p>",
+            "松贊林寺": "<h4>🙏 小布達拉宮</h4><p>雲南最大的藏傳佛教寺院。</p>",
+            "納帕海": "<h4>🐎 高原濕地</h4><p>依拉草原，黑頸鶴越冬地。</p>",
+            "崇聖寺三塔": "<h4>🛕 大理地標</h4><p>大理國皇家寺院，三塔鼎立。</p>",
+            "龍龕碼頭": "<h4>🌅 日出聖地</h4><p>洱海邊的紅水杉與日出。</p>"
+        };
+
+        const defaultItineraryData = [
+            { 
+                day: 1, date: "2/1 (日)", loc: "小港 ✈️ 昆明", hotel: "昆明火車站北廣場亞朵酒店", 
+                activities: [ 
+                    { name: "前往小港機場", type: "transport", desc: "AM 8:00 鹿寮搭7人座前往小港。", detailedInfo: null },
+                    { 
+                        name: "飛往昆明 (點擊看詳情)", 
+                        type: "transport", 
+                        desc: "國泰CX431 (11:25) -> 香港轉機 -> 東航MU734 (19:50抵達)", 
+                        detailedInfo: "<h4>🛫 去程航班詳情 (2026/02/01)</h4><ul class='list-disc pl-5 mt-2 space-y-2'><li><strong>第一段 (國泰航空 CX431)</strong><br>高雄 (KHH) I 航廈 11:25 出發<br>香港 (HKG) T1 航廈 13:10 抵達<br>飛行時間: 01h 45m<br>行李: 1件</li><li><strong>🔄 香港轉機</strong><br>停留時間: 約 3小時 55分<br><span class='text-red-600 font-bold'>⚠️ 需在高雄確認行李是否直掛昆明，若無則需在香港入境重掛。</span></li><li><strong>第二段 (東方航空 MU734)</strong><br>香港 (HKG) 17:05 出發<br>昆明 (KMG) 19:50 抵達<br>艙等: 經濟艙 S</li></ul>" 
+                    }, 
+                    { name: "前往飯店", type: "transport", desc: "滴滴打車 (7人座一輛或五人座兩輛)。", detailedInfo: null } 
+                ], notes: "請再次確認行李直掛問題。" 
+            },
+            { 
+                day: 2, date: "2/2 (一)", loc: "昆明", hotel: "昆明火車站北廣場亞朵酒店", 
+                activities: [ 
+                    { name: "石林+滇池一日游", type: "spot", desc: "携程旅行订单包車 (二環車接, 9點出發, 15人小團)。", detailedInfo: detailedSpots["昆明石林"] }, 
+                    { name: "午餐/晚餐", type: "food", desc: "含中餐，晚餐自理 (過橋米線/酸菜魚/野生菌火鍋)。", detailedInfo: null } 
+                ], notes: "訂單連結: https://t.ctrip.cn/?shE0F2n4E91E0 (費用¥810已付)" 
+            },
+            { 
+                day: 3, date: "2/3 (二)", loc: "昆明 🚗 大理", hotel: "大理 走走停停", 
+                activities: [ 
+                    { name: "前往大理", type: "transport", desc: "上午併車 (因有大件行李)。", detailedInfo: null }, 
+                    { name: "大理古城", type: "spot", desc: "在有風的地方等你。", detailedInfo: detailedSpots["大理古城"] }, 
+                    { name: "鳳陽邑村", type: "spot", desc: "有風的地方拍戲點。", detailedInfo: null },
+                    { name: "龍龕碼頭", type: "spot", desc: "洱海邊。", detailedInfo: detailedSpots["龍龕碼頭"] },
+                    { name: "大理市區", type: "spot", desc: "五華樓、集貿市集、崇聖寺三塔。", detailedInfo: detailedSpots["崇聖寺三塔"] }
+                ], notes: "交通: 併車/范師傅。晚餐: 盡善百年古院/段公子。" 
+            },
+            { 
+                day: 4, date: "2/4 (三)", loc: "大理", hotel: "大理 走走停停", 
+                activities: [ 
+                    { name: "洱海環湖", type: "spot", desc: "包車環湖一圈 (美英刷卡$1026)。", detailedInfo: detailedSpots["洱海環湖"] }, 
+                    { name: "雙廊古鎮", type: "spot", desc: "行程參考點。", detailedInfo: detailedSpots["雙廊古鎮"] }, 
+                    { name: "喜城古鎮", type: "spot", desc: "喜洲古鎮。", detailedInfo: detailedSpots["喜城古鎮"] },
+                    { name: "蟠溪S灣", type: "spot", desc: "網紅打卡點。", detailedInfo: detailedSpots["蟠溪S灣"] },
+                    { name: "鳳陽小村", type: "spot", desc: "行程參考點。", detailedInfo: null }
+                ], notes: "交通: 包5人座。用餐: 尋野野生菌/拾味園。" 
+            },
+            { 
+                day: 5, date: "2/5 (四)", loc: "大理 🚗 沙溪", hotel: "沙溪 清水橋雅苑順苑民宿", 
+                activities: [ 
+                    { name: "前往沙溪", type: "transport", desc: "8-10點 民宿拼車到沙溪。", detailedInfo: null }, 
+                    { name: "沙溪古鎮", type: "spot", desc: "去有風的地方拍戲點。", detailedInfo: detailedSpots["沙溪古鎮"] }, 
+                    { name: "有風小鎮/四方街", type: "spot", desc: "古鎮漫遊。", detailedInfo: null },
+                    { name: "玉津橋", type: "spot", desc: "古橋流水。", detailedInfo: detailedSpots["玉津橋"] },
+                    { name: "半山咖啡", type: "spot", desc: "網紅景點。", detailedInfo: null },
+                    { name: "撮撮小館", type: "food", desc: "用餐點。", detailedInfo: null }
+                ], notes: "民宿位置: 玉津橋最後一排邊。餐飲: 閤盧小苑/初見沙溪。" 
+            },
+            { 
+                day: 6, date: "2/6 (五)", loc: "沙溪 🚗 麗江", hotel: "麗江 知与雅舍客棧", 
+                activities: [ 
+                    { name: "前往麗江", type: "transport", desc: "上午拼車前往。", detailedInfo: null }, 
+                    { name: "拉市海", type: "spot", desc: "下午行程。", detailedInfo: detailedSpots["拉市海"] }, 
+                    { name: "束河古鎮", type: "spot", desc: "晚上行程。", detailedInfo: detailedSpots["束河古鎮"] } 
+                ], notes: "⚠️ 第一天不洗頭，防高山症。先購氧氣瓶。交通: 併車/范。晚餐: 玉泉地道土雞。" 
+            },
+            { 
+                day: 7, date: "2/7 (六)", loc: "麗江", hotel: "麗江 知与雅舍客棧", 
+                activities: [ 
+                    { name: "玉龍雪山", type: "spot", desc: "日照金山 (海拔3050)。", detailedInfo: detailedSpots["玉龍雪山"] }, 
+                    { name: "藍月谷", type: "spot", desc: "水月閣站下車。", detailedInfo: detailedSpots["藍月谷"] }, 
+                    { name: "雲杉坪", type: "spot", desc: "麗江小瑞士 (海拔3250)。", detailedInfo: null }, 
+                    { name: "印象麗江秀", type: "spot", desc: "實景演出。", detailedInfo: detailedSpots["印象麗江"] },
+                    { name: "麗江古城", type: "spot", desc: "晚上 大研古鎮。", detailedInfo: detailedSpots["麗江古城"] }
+                ], notes: "輕裝旅行。交通: 包5人座。餐飲: 菌自由/雲雪麗/老鴨湯 (范推薦)。" 
+            },
+            { 
+                day: 8, date: "2/8 (日)", loc: "麗江 🚗 瀘沽湖", hotel: "瀘沽湖 戈瓦.花時間酒店", 
+                activities: [ 
+                    { name: "前往瀘沽湖", type: "transport", desc: "包5人座 (輕裝旅行)。", detailedInfo: null }, 
+                    { name: "瀘沽湖環湖", type: "spot", desc: "金沙江觀景台、情人灘、里格半島。", detailedInfo: detailedSpots["瀘沽湖"] }, 
+                    { name: "走婚橋/草海", type: "spot", desc: "摩梭文化。", detailedInfo: detailedSpots["走婚橋"] } 
+                ], notes: "飯店: 范推薦。用餐: 石鍋魚/歡樂人家柴火雞/老沄酸菜牛肉。" 
+            },
+            { 
+                day: 9, date: "2/9 (一)", loc: "瀘沽湖 🚗 香格里拉", hotel: "香格里拉 丹縵", 
+                activities: [ 
+                    { name: "前往香格里拉", type: "transport", desc: "5人座 (輕裝旅行)。", detailedInfo: null }, 
+                    { name: "虎跳峽", type: "spot", desc: "驚濤駭浪。", detailedInfo: detailedSpots["虎跳峽"] }, 
+                    { name: "獨克宗古城", type: "spot", desc: "月光之城。", detailedInfo: detailedSpots["獨克宗古城"] } 
+                ], notes: "飯店: 范推薦。餐飲: 犛牛肉。" 
+            },
+            { 
+                day: 10, date: "2/10 (二)", loc: "香格里拉 🚗 麗江", hotel: "麗江 知与雅舍", 
+                activities: [ 
+                    { name: "松贊林寺", type: "spot", desc: "小布達拉宮。", detailedInfo: detailedSpots["松贊林寺"] }, 
+                    { name: "納帕海", type: "spot", desc: "依拉草原。", detailedInfo: detailedSpots["納帕海"] },
+                    { name: "返回麗江", type: "transport", desc: "包5人座。", detailedInfo: null }
+                ], notes: "輕裝旅行。" 
+            },
+            { 
+                day: 11, date: "2/11 (三)", loc: "麗江 🚅 昆明", hotel: "昆明 雲立方亞朵酒店", 
+                activities: [ 
+                    { name: "麗江古城", type: "spot", desc: "上午自由活動。", detailedInfo: detailedSpots["麗江古城"] }, 
+                    { name: "前往昆明", type: "transport", desc: "下午 1:05 高鐵到昆明 (已訂, $6108)。", detailedInfo: null } 
+                ], notes: "路程: 香格里拉-麗江130km, 麗江-大理150km, 大理-昆明230km。" 
+            },
+            { 
+                day: 12, date: "2/12 (四)", loc: "昆明 ✈️ 小港", hotel: "溫暖的家", 
+                activities: [ 
+                    { name: "前往機場", type: "transport", desc: "5:30 飯店送機 (3大+1中行李)。", detailedInfo: null },
+                    { 
+                        name: "返程飛機 (點擊看詳情)", 
+                        type: "transport", 
+                        desc: "東航MU9623 (08:45) -> 香港轉機 -> 國泰CX458 (18:15抵達)", 
+                        detailedInfo: "<h4>🛬 回程航班詳情 (2026/02/12)</h4><ul class='list-disc pl-5 mt-2 space-y-2'><li><strong>第一段 (東方航空 MU9623)</strong><br>昆明 (KMG) 08:45 出發<br>香港 (HKG) 11:05 抵達<br>艙等: 經濟艙 T</li><li><strong>🔄 香港轉機</strong><br>停留時間: 約 5小時 40分<br><span class='text-green-600 font-bold'>時間充裕，可安排機場休息或用餐。</span></li><li><strong>第二段 (國泰航空 CX458)</strong><br>香港 (HKG) T1 航廈 16:45 出發<br>高雄 (KHH) I 航廈 18:15 抵達<br>機型: Economy</li></ul>" 
+                    } 
+                ], notes: "請范小姐幫忙跟飯店註明送機時間。" 
+            }
+        ];
+
+        let itineraryData = []; let currentDayIndex = 0; let members = []; let checklistData = []; let memoData = [];
+
+        function initData() {
+            const storedItin = localStorage.getItem(STORAGE_KEY + '_itinerary');
+            itineraryData = storedItin ? JSON.parse(storedItin) : JSON.parse(JSON.stringify(defaultItineraryData));
+            if(!storedItin) saveItinerary();
+
+            const storedMembers = localStorage.getItem(STORAGE_KEY + '_members');
+            members = storedMembers ? JSON.parse(storedMembers) : defaultMembers;
+            document.getElementById('member-input').value = members.join(', ');
+            updateBudgetFormMembers();
+            const storedCheck = localStorage.getItem(STORAGE_KEY + '_checklist_v2');
+            checklistData = storedCheck ? JSON.parse(storedCheck) : ["護照/台胞證","機票","現金","高山症藥","保暖衣物","充電器"].map(t=>({text:t,checked:false}));
+            const storedMemo = localStorage.getItem(STORAGE_KEY + '_memos');
+            memoData = storedMemo ? JSON.parse(storedMemo) : ["記得關瓦斯", "幫姑姑買普洱茶"];
+        }
+
+        function saveItinerary() { localStorage.setItem(STORAGE_KEY + '_itinerary', JSON.stringify(itineraryData)); }
+        function saveMembers() { const input=document.getElementById('member-input').value; members=input.split(/[,，]/).map(s=>s.trim()).filter(s=>s); localStorage.setItem(STORAGE_KEY+'_members',JSON.stringify(members)); document.getElementById('member-modal').classList.add('hidden'); updateBudgetFormMembers(); renderExpenses(); }
+        function updateBudgetFormMembers() { document.getElementById('item-payer').innerHTML=members.map(m=>`<option value="${m}">${m}</option>`).join(''); document.getElementById('item-involved').innerHTML=members.map((m,i)=>`<label class="flex items-center text-sm font-bold bg-white px-2 py-1 rounded border border-earth-light"><input type="checkbox" value="${m}" checked class="mr-1 accent-earth-primary h-4 w-4">${m}</label>`).join(''); }
+        
+        async function fetchWeather(city, index) { const coords = cityCoords[city]; const widget = document.getElementById(`weather-widget-${index}`); if (!coords || !widget) return; try { const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.long}&current=temperature_2m,weather_code&timezone=Asia%2FShanghai`; const response = await fetch(url); const data = await response.json(); const code = data.current.weather_code; const temp = Math.round(data.current.temperature_2m); let icon = 'fa-sun'; let text = '晴朗'; let color = 'text-orange-500'; if (code >= 1 && code <= 3) { icon = 'fa-cloud-sun'; text = '多雲'; color = 'text-gray-500'; } else if (code >= 45 && code <= 48) { icon = 'fa-smog'; text = '霧'; color = 'text-gray-400'; } else if (code >= 51 && code <= 67) { icon = 'fa-cloud-rain'; text = '有雨'; color = 'text-blue-500'; } else if (code >= 71) { icon = 'fa-snowflake'; text = '下雪'; color = 'text-blue-300'; } widget.innerHTML = `<i class="fas ${icon} ${color} text-lg mr-1"></i> <span class="font-bold text-earth-dark">${city} 目前 ${temp}°C (${text})</span> <span class="text-xs text-gray-400 ml-2">(實時參考)</span>`; } catch (error) { widget.innerHTML = `<span class="text-xs text-red-400">天氣更新失敗</span>`; } }
+
+        function renderItinerary() { 
+            const tabsContainer = document.getElementById('day-tabs-container'); const contentContainer = document.getElementById('day-content-container'); document.getElementById('total-days-display').innerText = itineraryData.length; 
+            tabsContainer.innerHTML = itineraryData.map((item, index) => { const isActive = index === currentDayIndex; return `<button onclick="selectDay(${index})" class="day-tab inline-flex flex-col items-center justify-center min-w-[70px] h-[70px] px-2 mr-3 rounded-xl border border-earth-light bg-[#fffefb] text-earth-accent transition-all ${isActive ? 'active' : ''}"><span class="text-xs uppercase tracking-wider font-bold mb-1">Day</span><span class="text-2xl font-bold font-serif">${item.day}</span></button>`; }).join('') + `<div class="w-4 inline-block"></div>`; 
+            const activeTab = tabsContainer.children[currentDayIndex]; if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); 
+            const item = itineraryData[currentDayIndex]; const city = item.loc.split(' ')[0].replace(/[\d\/\(\)日一二三四五六]/g, '').trim(); const locations = item.activities.map(a => a.name).filter(n => n.trim() !== ""); let mapCardHtml = ''; 
+            
+            if (locations.length > 0) { 
+                const baseUrl = "http://api.map.baidu.com/direction";
+                const origin = encodeURIComponent(locations[0]);
+                const destination = encodeURIComponent(locations[locations.length - 1]);
+                const fullMapUrl = `${baseUrl}?origin=${origin}&destination=${destination}&mode=driving&region=云南&output=html&src=webapp.yunnan_trip`;
+                const pathString = locations.map(l => `<span class="whitespace-nowrap font-bold">${l}</span>`).join(' <i class="fas fa-angle-right text-xs mx-1 text-earth-primary"></i> '); 
+                mapCardHtml = `<div class="card-earth p-4 mb-4 bg-earth-dark/5 border-dashed border border-earth-accent"><div class="flex justify-between items-center mb-2"><h4 class="font-bold text-earth-dark text-base"><i class="fas fa-map-marked-alt mr-2"></i>今日路線</h4></div><div class="text-sm mb-3 overflow-x-auto pb-1">${pathString}</div><a href="${fullMapUrl}" target="_blank" class="block w-full text-center bg-earth-primary text-white py-3 rounded-lg shadow font-bold text-sm">開啟 百度地圖 導航</a></div>`; 
+            } 
+            
+            const activitiesHtml = item.activities.map((act, idx) => { 
+                const mapUrl = `https://map.baidu.com/search/${encodeURIComponent(act.name)}`; 
+                return `
+                <div class="timeline-item group" data-idx="${idx}">
+                    <div class="timeline-dot"></div>
+                    <div class="card-earth py-4 pr-4 pl-12 relative bg-[#fffefb]">
+                        <div class="absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center handle bg-warm-bg rounded-l-lg border-r border-earth-light z-10"><i class="fas fa-grip-vertical text-earth-primary"></i></div>
+                        <div class="flex justify-between items-start mb-2"><h4 class="font-bold text-earth-dark text-lg">${act.name}</h4><div class="flex gap-1 ml-2"><span class="text-xs px-2 py-1 rounded bg-warm-bg text-earth-primary border border-earth-light">${act.type === 'transport' ? '交通' : '景點'}</span><button onclick="openEditModal(${currentDayIndex}, ${idx})" class="text-gray-400 px-1"><i class="fas fa-pen"></i></button></div></div>
+                        <p class="text-base text-gray-700 mb-3">${act.desc}</p>
+                        <div class="flex gap-2 mt-auto pt-2 border-t border-dashed border-earth-light">
+                            <a href="${mapUrl}" target="_blank" class="flex-1 text-center py-2 rounded border border-earth-accent text-earth-primary text-sm font-bold">地圖</a>
+                            ${act.detailedInfo ? `<button onclick="openReadModal(${currentDayIndex}, ${idx})" class="flex-1 text-center py-2 rounded bg-earth-primary text-white text-sm font-bold">導覽</button>` : ''}
+                        </div>
+                    </div>
+                </div>`; 
+            }).join(''); 
+            
+            let hotelHtml = ''; 
+            const hotelMapUrl = item.hotel ? `https://map.baidu.com/search/${encodeURIComponent(item.hotel)}` : '#';
+            const displayHotel = item.hotel || '<span class="text-gray-400 italic">未設定住宿</span>';
+            hotelHtml = `<div class="mt-6 p-4 bg-earth-light/20 border-2 border-earth-light rounded-xl flex justify-between items-center ml-6"><div class="flex-1"><h4 class="text-xs font-bold text-earth-accent uppercase tracking-wider mb-1">🛌 今晚住宿</h4><div class="text-lg font-black text-earth-dark font-serif">${displayHotel}</div></div><div class="flex gap-2"><button onclick="openEditHotelModal(${currentDayIndex})" class="w-10 h-10 flex items-center justify-center bg-white border border-earth-light rounded-lg shadow-sm text-earth-primary"><i class="fas fa-pen"></i></button>${item.hotel ? `<a href="${hotelMapUrl}" target="_blank" class="px-3 py-2 bg-earth-primary text-white rounded-lg font-bold shadow-sm text-sm flex items-center gap-1"><i class="fas fa-location-arrow"></i></a>` : ''}</div></div>`;
+            const weatherHtml = `<div id="weather-widget-${currentDayIndex}" class="flex items-center justify-center gap-2 text-sm text-earth-primary bg-white p-3 rounded-lg mb-4 border border-earth-light shadow-sm weather-loading"><i class="fas fa-sync fa-spin"></i> 正在更新 ${city} 天氣...</div>`; 
+            contentContainer.innerHTML = `<div class="animate-fadeIn pb-8"><div class="flex items-center justify-between mb-4"><div class="inline-block bg-earth-primary text-white px-4 py-1 text-base font-bold rounded shadow">${item.date}</div><div class="text-earth-accent font-bold text-xl border-b-2 border-earth-accent pb-1">${city}</div></div>${weatherHtml}${mapCardHtml}<div class="timeline-container relative" id="day-activity-list">${activitiesHtml}</div><div class="mt-4 text-center ml-6"><button onclick="addNewActivity(${currentDayIndex})" class="w-full py-3 border-2 border-dashed border-earth-light text-earth-accent rounded-lg font-bold">＋ 新增行程</button></div>${hotelHtml}${item.notes ? `<div class="mt-6 border-t border-dashed border-earth-light pt-4 ml-6"><div class="flex items-start text-red-800 bg-red-50 p-3 rounded text-base border border-red-100 font-bold"><i class="fas fa-exclamation-triangle mr-2 mt-1"></i><span>${item.notes}</span></div></div>` : ''}</div>`; 
+            
+            const sortableEl = document.getElementById('day-activity-list');
+            if (sortableEl && typeof Sortable !== 'undefined') {
+                new Sortable(sortableEl, { handle: '.handle', animation: 150, onEnd: function (evt) { const act = itineraryData[currentDayIndex].activities; act.splice(evt.newIndex, 0, act.splice(evt.oldIndex, 1)[0]); saveItinerary(); renderItinerary(); } }); 
+            }
+            fetchWeather(city, currentDayIndex); 
+        }
+
+        function selectDay(index) { currentDayIndex = index; renderItinerary(); }
+        function changeDay(delta) { const newIndex = currentDayIndex + delta; if (newIndex >= 0 && newIndex < itineraryData.length) selectDay(newIndex); }
+
+        // --- Budget System ---
+        function renderExpenses() {
+            let expenses = JSON.parse(localStorage.getItem(STORAGE_KEY + '_expenses')) || [];
+            let balances = {}; let totalCNY = 0; let totalTWD = 0;
+            members.forEach(m => balances[m] = 0);
+            
+            expenses.forEach(ex => {
+                let amount = parseFloat(ex.price);
+                if (ex.currency === 'TWD') {
+                    totalTWD += amount;
+                    amount = amount / currentRate;
+                } else {
+                    totalCNY += amount;
+                }
+
+                if (balances[ex.payer] !== undefined) {
+                    balances[ex.payer] += amount;
+                }
+                
+                const involved = (ex.involved && ex.involved.length > 0) ? ex.involved : members; 
+                const share = amount / involved.length;
+                
+                involved.forEach(person => { 
+                    if (balances[person] !== undefined) {
+                        balances[person] -= share; 
+                    }
+                });
+            });
+
+            document.getElementById('sum-cny').innerText = Math.round(totalCNY).toLocaleString();
+            document.getElementById('sum-twd').innerText = Math.round(totalTWD).toLocaleString();
+            
+            const estTotal = Math.round(totalTWD + (totalCNY * currentRate));
+            document.getElementById('total-est-twd').innerText = estTotal.toLocaleString();
+            
+            const boardHtml = Object.entries(balances).map(([name, amount]) => {
+                const color = amount >= 0 ? "text-green-600" : "text-red-600";
+                const action = amount >= 0 ? "應收" : "應付";
+                return `<div class="flex justify-between border-b border-white/10 py-1 font-bold"><span>${name}</span><span class="${color}">${action} ¥${Math.abs(Math.round(amount * 10) / 10)}</span></div>`;
+            }).join('');
+            document.getElementById('balance-board').innerHTML = boardHtml || '<p class="text-sm opacity-60">暫無資料</p>';
+            
+            document.getElementById('expense-list').innerHTML = [...expenses].reverse().map(ex => {
+                const currencyLabel = ex.currency === 'TWD' ? 'NT$' : '¥';
+                const payerInfo = `<span class="text-xs text-gray-500 block mt-1">${ex.payer} 付款 (${ex.involved ? ex.involved.length : members.length}人分)</span>`;
+                return `<div class="flex justify-between items-start bg-[#fffefb] p-4 border-b border-earth-light/50 rounded-lg shadow-sm mb-2"><div><span class="text-gray-900 font-bold text-lg">${ex.name}</span>${payerInfo}</div><div class="flex flex-col items-end"><span class="font-bold font-serif text-earth-dark text-xl">${currencyLabel} ${parseFloat(ex.price).toLocaleString()}</span><button onclick="deleteExpense(${ex.id})" class="text-gray-400 text-sm mt-1"><i class="fas fa-times"></i></button></div></div>`;
+            }).join('');
+        }
+
+        // 綁定事件到 window.onload 確保元素存在
+        window.onload = function() { 
+            initData(); 
+            renderItinerary(); 
+            renderChecklist(); 
+            renderMemos(); 
+            renderGuide(); 
+            renderFlights(); 
+            renderExpenses(); 
+            
+            // Add Expense Button Listener
+            const addBtn = document.getElementById('add-expense-btn');
+            if(addBtn) {
+                addBtn.addEventListener('click', function(e) {
+                    e.preventDefault(); 
+                    const name = document.getElementById('item-name').value;
+                    const price = document.getElementById('item-price').value;
+                    const currency = document.getElementById('item-currency').value;
+                    const payer = document.getElementById('item-payer').value;
+                    const involved = [];
+                    document.querySelectorAll('#item-involved input:checked').forEach(cb => involved.push(cb.value));
+
+                    if (!name || !price) { alert("請輸入名稱與金額"); return; }
+                    if (involved.length === 0) { alert("請至少選擇一位分攤人"); return; }
+
+                    let expenses = JSON.parse(localStorage.getItem(STORAGE_KEY + '_expenses')) || [];
+                    expenses.push({ id: Date.now(), name, price, currency, payer, involved });
+                    localStorage.setItem(STORAGE_KEY + '_expenses', JSON.stringify(expenses));
+                    
+                    document.getElementById('item-name').value = '';
+                    document.getElementById('item-price').value = '';
+                    renderExpenses();
+                });
+            }
+        }
+
+        // ... Rest of utils ...
+        function calculateRate(t) { const c=document.getElementById('calc-cny'), w=document.getElementById('calc-twd'); if(t==='cny'){let v=parseFloat(c.value);w.value=isNaN(v)?'':Math.round(v*currentRate);}else{let v=parseFloat(w.value);c.value=isNaN(v)?'':Math.round(v/currentRate);} }
+        function updateRate() { currentRate = parseFloat(document.getElementById('current-rate').value) || 4.5; renderExpenses(); calculateRate('twd'); }
+        function renderChecklist() { const con=document.getElementById('checklist-container'); con.innerHTML=checklistData.map((item,i)=>`<div class="flex items-center p-3 bg-[#fffefb] border-b border-earth-light hover:bg-warm-bg group"><input type="checkbox" class="h-6 w-6 text-earth-primary rounded" onchange="toggleCheckItem(${i})" ${item.checked?'checked':''}><span class="ml-4 flex-1 text-lg font-bold ${item.checked?'line-through text-gray-400':'text-gray-800'}">${item.text}</span><button onclick="deleteCheckItem(${i})" class="text-gray-300 hover:text-red-500 px-2"><i class="fas fa-trash"></i></button></div>`).join(''); document.getElementById('check-progress').innerText=checklistData.length?Math.round((checklistData.filter(i=>i.checked).length/checklistData.length)*100)+'%':'0%'; }
+        document.getElementById('checklist-form').addEventListener('submit',e=>{e.preventDefault();const v=document.getElementById('new-check-item').value;if(!v)return;checklistData.push({text:v,checked:false});saveChecklist();renderChecklist();document.getElementById('new-check-item').value='';});
+        function toggleCheckItem(i){checklistData[i].checked=!checklistData[i].checked;saveChecklist();renderChecklist();}
+        function deleteCheckItem(i){if(confirm('刪除?')){checklistData.splice(i,1);saveChecklist();renderChecklist();}}
+        function saveChecklist(){localStorage.setItem(STORAGE_KEY+'_checklist_v2',JSON.stringify(checklistData));}
+        function resetChecklist(){if(confirm('重置?')){checklistData=["護照/台胞證","機票","現金","高山症藥"].map(t=>({text:t,checked:false}));saveChecklist();renderChecklist();}}
+        function renderMemos(){const con=document.getElementById('memo-container');con.innerHTML=memoData.length?memoData.map((m,i)=>`<div class="flex justify-between items-center p-3 bg-yellow-50/50 border-b border-yellow-100 rounded"><span class="text-lg text-gray-800 font-medium">● ${m}</span><button onclick="deleteMemo(${i})" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button></div>`).join(''):'<div class="text-gray-400 text-sm italic text-center py-2">暫無備忘</div>';}
+        document.getElementById('memo-form').addEventListener('submit',e=>{e.preventDefault();const v=document.getElementById('new-memo-item').value;if(!v)return;memoData.push(v);saveMemos();renderMemos();document.getElementById('new-memo-item').value='';});
+        function deleteMemo(i){if(confirm('刪除?')){memoData.splice(i,1);saveMemos();renderMemos();}}
+        function saveMemos(){localStorage.setItem(STORAGE_KEY+'_memos',JSON.stringify(memoData));}
+        const guideData = { 
+            foodByRegion: [ { region: "大理", restaurants: [ {name:"盡善百年古院餐廳", loc:"博愛路", hours:"10:30-22:30", specialty:"土雞野生菌", desc:"環境古色古香。"}, {name:"段公子·神鵰俠侶店", loc:"人民路", hours:"11:00-22:30", specialty:"花醉魚", desc:"武俠主題。"}, {name:"尋野野生菌火鍋", loc:"人民路", hours:"10:00-24:00", specialty:"野生菌", desc:"湯頭鮮美。"} ] }, { region: "沙溪", restaurants: [ {name:"初見沙溪私房菜", loc:"古鎮內", hours:"11:30-20:30", specialty:"酸湯魚", desc:"安靜地道。"} ] }, { region: "麗江", restaurants: [ {name:"玉泉地道土雞", loc:"花馬街", hours:"09:30-22:00", specialty:"納西土雞", desc:"老字號。"} ] } ],
+            spotCategories: [ {title:"麗江", items: Object.keys(detailedSpots).filter(k=>["白沙古鎮","印象麗江","茶馬古道","玉湖村"].includes(k))}, {title:"大理", items: Object.keys(detailedSpots).filter(k=>["蒼山","龍龕碼頭","喜洲古鎮","巍山古城","興盛大橋"].includes(k))}, {title:"香格里拉", items: Object.keys(detailedSpots).filter(k=>["虎跳峽","獨克宗古城","松贊林寺","瀘沽湖"].includes(k))} ],
+            souvenirs: [ {name:"鮮花餅", desc:"玫瑰餡。", shops:"嘉華", addr:"市區"}, {name:"普洱茶", desc:"越陳越香。", shops:"大益", addr:"茶城"}, {name:"菌菇乾貨", desc:"燉湯極品。", shops:"農貿市場", addr:"篆新"}, {name:"銀飾", desc:"純度高。", shops:"百歲坊", addr:"古城"}, {name:"扎染", desc:"藍白布藝。", shops:"周城", addr:"喜洲"} ]
+        };
+        function renderGuide() {
+            document.getElementById('food-guide-list').innerHTML = guideData.foodByRegion.map(g => `<div class="mb-6"><h4 class="font-bold text-xl mb-4 text-earth-primary border-l-[6px] border-earth-primary pl-3">${g.region}</h4><ul class="space-y-4">${g.restaurants.map(i => { const mapUrl=`https://map.baidu.com/search/${encodeURIComponent(i.name+" "+i.loc)}`; return `<li class="p-4 border border-earth-light bg-[#fffefb] rounded-xl shadow-sm"><div class="flex justify-between items-start mb-2"><div class="flex-1"><div class="font-bold text-earth-dark text-xl">${i.name}</div><div class="text-sm text-earth-primary font-bold mt-1"><i class="fas fa-map-marker-alt mr-1"></i>${i.loc}</div></div><a href="${mapUrl}" target="_blank" class="bg-earth-accent text-white px-3 py-1 rounded text-sm font-bold shadow">導航</a></div><div class="text-base text-gray-800 space-y-1 mt-3 border-t border-dashed border-earth-light pt-2"><div><span class="font-bold">營業：</span>${i.hours}</div><div><span class="font-bold">招牌：</span>${i.specialty}</div><div class="text-gray-600 italic text-sm">"${i.desc}"</div></div></li>`; }).join('')}</ul></div>`).join('');
+            document.getElementById('souvenir-guide-list').innerHTML = guideData.souvenirs.map(s => `<div class="border border-earth-light bg-[#fffefb] p-4 rounded-xl shadow-sm"><h4 class="font-bold text-earth-dark text-xl mb-2">${s.name}</h4><p class="text-base text-gray-700 mb-2">${s.desc}</p><div class="text-sm bg-warm-bg p-2 rounded border border-earth-light/30"><div class="mb-1"><span class="font-bold text-earth-primary">推薦：</span>${s.shops}</div><div><span class="font-bold text-earth-primary">地址：</span>${s.addr}</div></div></div>`).join('');
+            document.getElementById('spot-guide-list').innerHTML = guideData.spotCategories.map(c=>`<div class="mb-6"><h4 class="font-bold text-earth-primary text-xl mb-3 border-l-[6px] border-earth-primary pl-3">${c.title}</h4><div class="flex flex-wrap gap-3">${c.items.map(i => `<button onclick="openDeepDive('${i}')" class="bg-[#fffefb] border-2 border-earth-light p-4 rounded-xl shadow-sm hover:bg-warm-bg hover:border-earth-accent transition-all text-left group"><div class="font-bold text-lg text-earth-dark group-hover:text-earth-primary">${i}</div><div class="text-xs text-gray-500 mt-2 font-bold flex items-center group-hover:text-earth-accent"><i class="fas fa-book-open mr-1"></i> 點擊詳閱</div></button>`).join('')}</div></div>`).join('');
+        }
+        function openDeepDive(spotName) { const content = detailedSpots[spotName] || "<p>暫無詳細資料</p>"; document.getElementById('modal-title').innerText = spotName; document.getElementById('modal-tag').innerText = "深度導覽"; document.getElementById('modal-content').innerHTML = content; document.getElementById('info-modal').classList.remove('hidden'); }
+        function switchTab(id, btn) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); btn.classList.add('active'); window.scrollTo(0,0); }
+        function scrollToId(id) { document.getElementById(id).scrollIntoView({behavior:'smooth'}); }
+        function openReadModal(d, a) { const act=itineraryData[d].activities[a]; document.getElementById('modal-title').innerText=act.name; document.getElementById('modal-tag').innerText=act.type==='spot'?'深度導覽':'資訊'; document.getElementById('modal-content').innerHTML=act.detailedInfo; document.getElementById('info-modal').classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function deleteExpense(id) { if(confirm('刪除?')) { let es=JSON.parse(localStorage.getItem(STORAGE_KEY+'_expenses'))||[]; localStorage.setItem(STORAGE_KEY+'_expenses',JSON.stringify(es.filter(e=>e.id!==id))); renderExpenses(); } }
+        function clearAllData(t) { if(confirm('確定清除?')) { localStorage.removeItem(STORAGE_KEY+'_'+t); location.reload(); } }
+        function renderFlights(){ let fs=JSON.parse(localStorage.getItem(STORAGE_KEY+'_flights'))||[]; document.getElementById('flight-list').innerHTML=fs.map(f=>`<div class="flex justify-between p-2 bg-white border rounded shadow-sm"><span>${f.str}</span><button onclick="if(confirm('刪除?')){let fs=JSON.parse(localStorage.getItem('${STORAGE_KEY}_flights'))||[];localStorage.setItem('${STORAGE_KEY}_flights',JSON.stringify(fs.filter(x=>x.id!=${f.id})));renderFlights()}" class="text-red-500">x</button></div>`).join(''); }
+        document.getElementById('flight-form').addEventListener('submit',e=>{e.preventDefault();let v=document.getElementById('flight-info-str').value;if(!v)return;let fs=JSON.parse(localStorage.getItem(STORAGE_KEY+'_flights'))||[];fs.push({id:Date.now(),str:v});localStorage.setItem(STORAGE_KEY+'_flights',JSON.stringify(fs));document.getElementById('flight-info-str').value='';renderFlights();});
+        function exportData(){const d={itinerary:JSON.parse(localStorage.getItem(STORAGE_KEY+'_itinerary')),expenses:JSON.parse(localStorage.getItem(STORAGE_KEY+'_expenses')),flights:JSON.parse(localStorage.getItem(STORAGE_KEY+'_flights')),checklist:checklistData,memos:memoData,members:members};const a=document.createElement('a');a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(d));a.download="Yunnan_Trip_2026.json";document.body.appendChild(a);a.click();a.remove();}
+        function importData(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.itinerary)localStorage.setItem(STORAGE_KEY+'_itinerary',JSON.stringify(d.itinerary));if(d.expenses)localStorage.setItem(STORAGE_KEY+'_expenses',JSON.stringify(d.expenses));if(d.flights)localStorage.setItem(STORAGE_KEY+'_flights',JSON.stringify(d.flights));if(d.checklist)localStorage.setItem(STORAGE_KEY+'_checklist_v2',JSON.stringify(d.checklist));if(d.memos)localStorage.setItem(STORAGE_KEY+'_memos',JSON.stringify(d.memos));if(d.members)localStorage.setItem(STORAGE_KEY+'_members',JSON.stringify(d.members));alert('匯入成功');location.reload();}catch(e){alert('錯誤');}};r.readAsText(f);}
+        function openEditModal(d,a){const act=itineraryData[d].activities[a];document.getElementById('edit-day-idx').value=d;document.getElementById('edit-act-idx').value=a;document.getElementById('edit-name').value=act.name;document.getElementById('edit-type').value=act.type;document.getElementById('edit-desc').value=act.desc;document.getElementById('edit-detail').value=act.detailedInfo||'';document.getElementById('edit-modal').classList.remove('hidden');}
+        function addNewActivity(d){itineraryData[d].activities.push({name:"新行程",type:"spot",desc:"編輯描述",detailedInfo:""});saveItinerary();renderItinerary();openEditModal(d,itineraryData[d].activities.length-1);}
+        function deleteActivity(){if(!confirm('刪除?'))return;const d=document.getElementById('edit-day-idx').value;const a=document.getElementById('edit-act-idx').value;itineraryData[d].activities.splice(a,1);saveItinerary();closeModal('edit-modal');renderItinerary();}
+        document.getElementById('edit-activity-form').addEventListener('submit',e=>{e.preventDefault();const d=document.getElementById('edit-day-idx').value;const a=document.getElementById('edit-act-idx').value;itineraryData[d].activities[a]={name:document.getElementById('edit-name').value,type:document.getElementById('edit-type').value,desc:document.getElementById('edit-desc').value,detailedInfo:document.getElementById('edit-detail').value};saveItinerary();closeModal('edit-modal');renderItinerary();});
+        function openEditHotelModal(d){const h=itineraryData[d].hotel||"";document.getElementById('edit-hotel-day-idx').value=d;document.getElementById('edit-hotel-name').value=h;document.getElementById('edit-hotel-modal').classList.remove('hidden');}
+        function saveHotel(){const d=document.getElementById('edit-hotel-day-idx').value;itineraryData[d].hotel=document.getElementById('edit-hotel-name').value;saveItinerary();renderItinerary();closeModal('edit-hotel-modal');}
+        function closeModal(id){document.getElementById(id).classList.add('hidden');}
+        window.onclick=function(e){if(e.target.id.includes('modal'))closeModal(e.target.id);}
+    </script>
+</body>
+</html>
